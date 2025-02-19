@@ -1,0 +1,15 @@
+{
+    "name": "connector-payment-service",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "tasks.max": "1",
+        "database.hostname": "postgres",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "postgres",
+        "database.dbname": "payment",
+        "topic.prefix": "cdc-payment-service",
+        "schema.include.list": "public",
+        "slot.name": "payment"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "name": "connector-user-service",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "tasks.max": "1",
+        "database.hostname": "postgres",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "postgres",
+        "database.dbname": "userr",
+        "topic.prefix": "cdc-user-service",
+        "schema.include.list": "public",
+        "slot.name": "user"
+    }
+}

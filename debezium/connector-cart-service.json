@@ -1,0 +1,15 @@
+{
+    "name": "connector-cart-service",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "tasks.max": "1",
+        "database.hostname": "postgres",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "postgres",
+        "database.dbname": "cart",
+        "topic.prefix": "cdc-cart-service",
+        "schema.include.list": "public",
+        "slot.name": "cart"
+    }
+}

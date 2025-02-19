@@ -1,0 +1,53 @@
+services:
+    elastic:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+        environment:
+            - ELASTIC_PASSWORD=myelasticpass
+            - KIBANA_PASSWORD=kibanapass
+            - discovery.type=single-node
+            - xpack.security.http.ssl.enabled=false
+            - cluster.routing.allocation.disk.threshold_enabled=false
+        volumes:
+            - ./elk/data:/usr/share/elasticsearch/data
+        ports:
+            - "9200:9200"
+
+    logstash:
+        image: docker.elastic.co/logstash/logstash:8.12.2
+        volumes:
+            - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+            - /home/kingstonduy/working/repos/thesis-backend/product-service/:/var/log/server/product/
+            - /home/kingstonduy/working/repos/thesis-backend/user-service/:/var/log/server/user/
+            - /home/kingstonduy/working/repos/thesis-backend/cart-service/:/var/log/server/cart/
+            - /home/kingstonduy/working/repos/thesis-backend/order-service/:/var/log/server/order/
+
+        environment:
+            - ELASTIC_USER=elastic
+            - ELASTIC_PASSWORD=myelasticpass
+            - ELASTIC_HOSTS=http://elastic:9200
+        depends_on:
+            - elastic
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:8.12.2
+        environment:
+            SERVER_NAME: kibana
+            ELASTICSEARCH_HOSTS: '["http://elastic:9200"]'
+            ELASTICSEARCH_USERNAME: kibana_system
+            ELASTICSEARCH_PASSWORD: kibanapass
+        ports:
+            - "5601:5601"
+        depends_on:
+            - elastic
+
+    filebeat:
+        image: docker.elastic.co/beats/filebeat:8.12.2
+        volumes:
+            - ./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml
+            - /home/kingstonduy/working/repos/thesis-backend/product-service/:/var/log/server/product/
+            - /home/kingstonduy/working/repos/thesis-backend/user-service/:/var/log/server/user/
+            - /home/kingstonduy/working/repos/thesis-backend/cart-service/:/var/log/server/cart/
+            - /home/kingstonduy/working/repos/thesis-backend/order-service/:/var/log/server/order/
+        depends_on:
+            - elastic
+            - logstash

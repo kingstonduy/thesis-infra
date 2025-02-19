@@ -1,0 +1,10 @@
+filebeat.inputs:
+    - type: filestream
+      id: my-log-input
+      paths:
+          - "/var/log/server/product/*.log"
+          - "/var/log/server/user/*.log"
+          - "/var/log/server/order/*.log"
+          - "/var/log/server/order/*.log"
+output.logstash:
+    hosts: ["logstash:5044"]
