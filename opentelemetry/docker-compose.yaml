@@ -1,17 +1,22 @@
-version: "3.8"
 services:
     jaeger:
         image: jaegertracing/all-in-one:latest
         container_name: jaeger
         restart: always
         environment:
-            - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+            COLLECTOR_ZIPKIN_HOST_PORT: "9411" # Correct format
         ports:
             - "16686:16686"
             - "4318:4318"
             - "14268:14268"
         volumes:
             - jaeger-data:/data # Mount volume to persist data
+        networks:
+            - thesis-network
 
 volumes:
     jaeger-data:
+
+networks:
+    thesis-network:
+        external: true

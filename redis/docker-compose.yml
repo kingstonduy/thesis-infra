@@ -1,4 +1,3 @@
-version: "3.3"
 services:
     redis:
         image: redis:6.0.7
@@ -8,6 +7,11 @@ services:
             - redis_volume_data:/data
         ports:
             - 6379:6379
+        networks:
+            - thesis-network
 
 volumes:
     redis_volume_data:
+networks:
+    thesis-network:
+        external: true

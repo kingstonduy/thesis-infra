@@ -1,5 +1,3 @@
----
-version: "2"
 services:
     zookeeper:
         image: confluentinc/cp-zookeeper:6.2.0
@@ -10,6 +8,10 @@ services:
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
             ZOOKEEPER_TICK_TIME: 2000
+        volumes:
+            - zookeeper_data:/var/lib/zookeeper
+        networks:
+            - thesis-network
 
     broker:
         image: confluentinc/cp-server:6.2.0
@@ -41,6 +43,10 @@ services:
             CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
             CONFLUENT_METRICS_ENABLE: "true"
             CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
+        volumes:
+            - broker_data:/var/lib/kafka
+        networks:
+            - thesis-network
 
     schema-registry:
         image: confluentinc/cp-schema-registry:6.2.0
@@ -54,6 +60,10 @@ services:
             SCHEMA_REGISTRY_HOST_NAME: schema-registry
             SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://broker:29092"
             SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8092
+        volumes:
+            - schema_registry_data:/var/lib/schema-registry
+        networks:
+            - thesis-network
 
     kafka-connect:
         image: confluentinc/cp-kafka-connect:6.2.0
@@ -84,9 +94,6 @@ services:
             CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
             CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
             CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/jars,/usr/share/confluent-hub-components"
-        volumes:
-            - ./connectors:/etc/kafka-connect/jars/
-            - ./confluentinc-plugin:/usr/share/plugin
         depends_on:
             - zookeeper
             - broker
@@ -101,6 +108,12 @@ services:
                 confluent-hub install --no-prompt  /usr/share/plugin/confluentinc-connect-transforms-1.5.0.zip
                 confluent-hub install --no-prompt /usr/share/plugin/debezium-debezium-connector-postgresql-2.5.4.zip
                 /etc/confluent/docker/run
+        volumes:
+            - ./connectors:/etc/kafka-connect/jars/
+            - ./confluentinc-plugin:/usr/share/plugin
+            - kafka_connect_data:/var/lib/kafka-connect
+        networks:
+            - thesis-network
 
     control-center:
         image: confluentinc/cp-enterprise-control-center:6.2.0
@@ -109,7 +122,6 @@ services:
         depends_on:
             - broker
             - schema-registry
-            #  - connect
             - kafka-connect
             - ksqldb-server
         ports:
@@ -125,6 +137,10 @@ services:
             CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
             CONFLUENT_METRICS_TOPIC_REPLICATION: 1
             PORT: 9021
+        volumes:
+            - control_center_data:/var/lib/control-center
+        networks:
+            - thesis-network
 
     ksqldb-server:
         image: confluentinc/cp-ksqldb-server:6.2.0
@@ -132,7 +148,6 @@ services:
         container_name: ksqldb-server
         depends_on:
             - broker
-            #  - connect
             - kafka-connect
         ports:
             - "8088:8088"
@@ -149,6 +164,8 @@ services:
             KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
             KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
             KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+        networks:
+            - thesis-network
 
     ksqldb-cli:
         image: confluentinc/cp-ksqldb-cli:6.2.0
@@ -160,6 +177,8 @@ services:
             - ksqldb-server
         entrypoint: /bin/sh
         tty: true
+        networks:
+            - thesis-network
 
     rest-proxy:
         image: confluentinc/cp-kafka-rest:6.2.0
@@ -175,3 +194,15 @@ services:
             KAFKA_REST_BOOTSTRAP_SERVERS: "broker:29092"
             KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
             KAFKA_REST_SCHEMA_REGISTRY_URL: "http://schema-registry:8092"
+        networks:
+            - thesis-network
+volumes:
+    zookeeper_data:
+    broker_data:
+    schema_registry_data:
+    kafka_connect_data:
+    control_center_data:
+    ksqldb_data:
+networks:
+    thesis-network:
+        external: true

@@ -1,13 +1,13 @@
-docker network create kong-net
+docker network create thesis-network
 
 docker run -d --name kong-database \
---network=kong-net \
+--network=thesis-network \
 -e "POSTGRES_USER=kong" \
 -e "POSTGRES_DB=kong" \
 -e "POSTGRES_PASSWORD=kongpass" \
 postgres:13
 
-docker run --rm --network=kong-net \
+docker run --rm --network=thesis-network \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database" \
 -e "KONG_PG_PASSWORD=kongpass" \
@@ -15,7 +15,7 @@ docker run --rm --network=kong-net \
 kong/kong-gateway:3.9.0.0 kong migrations bootstrap
 
 docker run -d --name kong-gateway \
---network=kong-net \
+--network=thesis-network \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database" \
 -e "KONG_PG_USER=kong" \
@@ -39,7 +39,7 @@ kong/kong-gateway:3.9.0.0
 
 docker kill kong-database
 docker container rm kong-database
-docker network rm kong-net
+docker network rm thesis-network
 
 # Register Product Service
 

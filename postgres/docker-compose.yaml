@@ -1,5 +1,3 @@
-version: "3.5"
-
 services:
     postgres:
         container_name: postgres_container
@@ -9,8 +7,8 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
             PGDATA: /data/postgres
-        # volumes:
-        #     - postgres:/data/postgres
+        volumes:
+            - postgres:/data/postgres
         command: |
             postgres 
             -c wal_level=logical
@@ -20,5 +18,10 @@ services:
             -c hot_standby_feedback=on
         ports:
             - "5432:5432"
-# volumes:
-#     postgres:
+        networks:
+            - thesis-network
+volumes:
+    postgres:
+networks:
+    thesis-network:
+        external: true
